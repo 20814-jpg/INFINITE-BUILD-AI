@@ -1,11 +1,1 @@
-const express = require('express');
-const app = express();
-const port = 3000;
-
-app.get('/', (req, res) => {
-    res.send('Welcome to the Express AI App Builder!');
-});
-
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
-});
+import express from "express"; import cors from "cors"; const app = express(); app.use(cors()); app.use(express.json()); let project = { code: "" }; function generateApp(prompt) { if (prompt.toLowerCase().includes("todo")) { return `export default function App() { const [todos, setTodos] = React.useState([]); const [input, setInput] = React.useState(""); return ( <div style={{padding:20,fontFamily:"Arial"}}> <h1>AI Todo App</h1> <input value={input} onChange={(e)=>setInput(e.target.value)} /> <button onClick={()=>{ setTodos([...todos, input]); setInput(""); }}> Add </button> <ul> {todos.map((t,i)=><li key={i}>{t}</li>)} </ul> </div> ); }`; } return `export default function App() { return <h1>AI: I built nothing yet 😄 Try "todo app"</h1>; }`; } app.post("/chat", (req, res) => { const { message } = req.body; const code = generateApp(message); project.code = code; res.json({ success: true, code }); }); app.get("/app", (req, res) => { res.json(project); }); app.get("/", (req, res) => { res.send(`<!DOCTYPE html><html><head><title>AI Builder</title></head><body style=\"font-family:Arial\"><h2>AI App Builder MVP</h2><input id=\"input\" placeholder=\"Type: build todo app\" /><button onclick=\"send()\">Build</button><h3>Preview:</h3><iframe id=\"frame\" style=\"width:100%;height:400px;\"></iframe><script>async function send() { const msg = document.getElementById(\"input\").value; const res = await fetch(\"http://localhost:3000/chat\", { method: \"POST\", headers: {\"Content-Type\":\"application/json\"}, body: JSON.stringify({ message: msg }) }); const data = await res.json(); const iframe = document.getElementById(\"frame\"); const html = \\`<!DOCTYPE html><html><head><script src=\"https://unpkg.com/react@18/umd/react.development.js\"><\/script><script src=\"https://unpkg.com/react-dom@18/umd/react-dom.development.js\"><\/script></head><body><div id=\"root\"></div><script>\${data.code} const root = ReactDOM.createRoot(document.getElementById(\"root\")); root.render(React.createElement(App));<\/script></body></html>\\`; iframe.srcdoc = html; }\";</script></body></html>`); }); app.listen(3000, () => { console.log("AI Builder running on http://localhost:3000"); });
